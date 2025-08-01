@@ -1,0 +1,38 @@
+# IDE/Editor
+.vscode/
+.idea/
+*.swp
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Dependency & build
+bin/
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# Go build
+*.out
+*.pb.go
+*.pb.gw.go
+*.pb.json
+
+# Env
+.env
+.env.*
+
+# Logs
+*.log
+
+# Docker
+*.pid
+tmp/
+
+# Coverage/test
+coverage.out
