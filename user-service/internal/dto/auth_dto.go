@@ -1,7 +1,5 @@
 package dto
 
-import "github.com/davidcm146/shopee-microservice/user-service/internal/models"
-
 type RegisterInput struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -15,6 +13,5 @@ type LoginInput struct {
 }
 
 type LoginResult struct {
-	SessionID string       `json:"sessionID"`
-	User      *models.User `json:"user"`
+	SessionID string `json:"sessionID"`
 }

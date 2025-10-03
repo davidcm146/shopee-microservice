@@ -1,38 +1,62 @@
-# IDE/Editor
-.vscode/
-.idea/
+# Binaries
+/bin/
+/build/
+/dist/
+/*.exe
+/*.exe~
+/*.dll
+/*.so
+/*.dylib
+/*.test
+*.out
+
+# Go workspace
+*.log
+*.lock
+*.tmp
+*.cache
 *.swp
 
-# OS files
-.DS_Store
-Thumbs.db
+# Go modules
+/vendor/
+/go.sum
 
-# Dependency & build
-bin/
-vendor/
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.test
+# Coverage & test
+*.cover
+*.coverprofile
+coverage.out
 
-# Go build
-*.out
-*.pb.go
-*.pb.gw.go
-*.pb.json
+# Air (hot reload)
+.air.toml
+tmp/
+.air/
 
-# Env
+# IDE / Editor
+.vscode/
+.idea/
+*.iml
+*.DS_Store
+*.sublime-workspace
+*.sublime-project
+
+# Env & configs
 .env
 .env.*
-
-# Logs
-*.log
+*.local
 
 # Docker
+docker-compose.override.yml
 *.pid
-tmp/
+*.seed
 
-# Coverage/test
-coverage.out
+# Database dumps / data
+*.db
+*.sql
+*.dump
+
+# Generated proto
+*.pb.go
+*.pb.gw.go
+
+# Kubernetes
+*.yaml.save

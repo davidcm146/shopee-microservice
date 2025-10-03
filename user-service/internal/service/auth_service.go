@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
@@ -47,6 +48,7 @@ func (s *authService) Register(ctx context.Context, input *dto.RegisterInput) (*
 
 	// Create user
 	user := &models.User{
+		Role:     input.Role,
 		Name:     input.Name,
 		Email:    input.Email,
 		Password: string(hashedPassword),
@@ -72,15 +74,12 @@ func (s *authService) Login(ctx context.Context, input *dto.LoginInput) (*dto.Lo
 	}
 
 	sessionID := uuid.NewString()
-
-	// Save session to Redis (key=sessionID, value=userID)
 	err = s.redis.Client.Set(ctx, sessionID, user.ID, time.Hour*24).Err()
 	if err != nil {
 		return nil, err
 	}
 
 	return &dto.LoginResult{
-		User:      user,
 		SessionID: sessionID,
 	}, nil
 }
@@ -91,6 +90,7 @@ func (s *authService) Logout(ctx context.Context, sessionID string) error {
 
 func (s *authService) GetUserBySessionID(ctx context.Context, sessionID string) (*models.User, error) {
 	userIDStr, err := s.redis.Client.Get(ctx, sessionID).Result()
+	fmt.Println("UserID: ", userIDStr)
 	if err != nil {
 		return nil, errors.New("session not found")
 	}
