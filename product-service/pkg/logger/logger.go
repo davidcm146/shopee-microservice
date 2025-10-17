@@ -1,8 +1,6 @@
 package logger
 
-import (
-	"go.uber.org/zap"
-)
+import "go.uber.org/zap"
 
 func NewLogger(service, env string) (*zap.Logger, error) {
 	var base *zap.Logger
@@ -14,6 +12,7 @@ func NewLogger(service, env string) (*zap.Logger, error) {
 	default:
 		base, err = zap.NewDevelopment()
 	}
+
 	if err != nil {
 		return nil, err
 	}

@@ -16,9 +16,8 @@ func AuthRequired(authService service.AuthService) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
-		fmt.Println("Raw Cookie Header:", c.Request.Header.Get("Cookie"))
+		// fmt.Println("Raw Cookie Header:", c.Request.Header.Get("Cookie"))
 		user, err := authService.GetUserBySessionID(c.Request.Context(), cookie.Value)
-		fmt.Println("User info: ", user)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
 			return

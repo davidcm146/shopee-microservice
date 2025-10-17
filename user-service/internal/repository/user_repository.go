@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/davidcm146/shopee-microservice/user-service/internal/models"
 	"github.com/davidcm146/shopee-microservice/user-service/pkg/db"
@@ -54,6 +55,7 @@ func (r *userRepository) FindByID(ctx context.Context, id string) (*models.User,
 }
 
 func (r *userRepository) Create(ctx context.Context, user *models.User) (*models.User, error) {
+	user.CreatedAt = time.Now()
 	_, err := r.collection.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
