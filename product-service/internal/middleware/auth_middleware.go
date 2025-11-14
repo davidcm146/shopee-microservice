@@ -24,8 +24,9 @@ func AuthRequired() gin.HandlerFunc {
 		}
 		defer resp.Body.Close()
 		var user struct {
-			ID   string `json:"id"`
-			Role string `json:"role"`
+			ID    string `json:"id"`
+			Role  string `json:"role"`
+			Email string `json:"email"`
 		}
 
 		if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {

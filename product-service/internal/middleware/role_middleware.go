@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"slices"
 
@@ -18,11 +17,11 @@ func RoleRequired(roles ...string) gin.HandlerFunc {
 		}
 
 		user, ok := currentUser.(struct {
-			ID   string `json:"id"`
-			Role string `json:"role"`
+			ID    string `json:"id"`
+			Role  string `json:"role"`
+			Email string `json:"email"`
 		})
 
-		fmt.Println("Current User Role:", user)
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Invalid user type"})
 			return

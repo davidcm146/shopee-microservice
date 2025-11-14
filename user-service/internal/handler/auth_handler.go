@@ -128,7 +128,8 @@ func (h *AuthHandler) VerifySession(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"id":   user.ID,
-		"role": user.Role,
+		"id":    user.ID,
+		"role":  user.Role,
+		"email": user.Email,
 	})
 }

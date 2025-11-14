@@ -16,3 +16,9 @@ type LoginInput struct {
 type LoginResult struct {
 	SessionID string `json:"sessionID"`
 }
+
+type AuthResponse struct {
+	ID    string `json:"id"`
+	Role  string `json:"role"`
+	Email string `json:"email"`
+}
