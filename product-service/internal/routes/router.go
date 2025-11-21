@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/davidcm146/shopee-microservice/product-service/internal/common/errors"
 	"github.com/davidcm146/shopee-microservice/product-service/internal/handler"
 	"github.com/davidcm146/shopee-microservice/product-service/internal/middleware"
 	"github.com/gin-gonic/gin"
@@ -8,7 +9,7 @@ import (
 
 func NewRouter(productHandler *handler.ProductHandler) *gin.Engine {
 	router := gin.Default()
-	router.Use(errors.ErrorHandler())
+	router.Use(Errors.ErrorHandler())
 
 	api := router.Group("/api")
 	{
