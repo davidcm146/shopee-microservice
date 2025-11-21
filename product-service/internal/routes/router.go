@@ -8,6 +8,7 @@ import (
 
 func NewRouter(productHandler *handler.ProductHandler) *gin.Engine {
 	router := gin.Default()
+	router.Use(errors.ErrorHandler())
 
 	api := router.Group("/api")
 	{
@@ -16,8 +17,8 @@ func NewRouter(productHandler *handler.ProductHandler) *gin.Engine {
 			products.GET("/", productHandler.GetAllProducts)
 			products.GET("/:id", productHandler.GetProductByID)
 			products.POST("/", middleware.AuthRequired(), middleware.RoleRequired("SELLER", "ADMIN"), productHandler.CreateProduct)
-			products.PUT("/:id", middleware.AuthRequired(), middleware.RoleRequired("SELLER", "ADMIN"), productHandler.UpdateProduct)
-			products.DELETE("/:id", middleware.AuthRequired(), middleware.RoleRequired("SELLER", "ADMIN"), productHandler.DeleteProduct)
+			products.PUT("/:id", middleware.AuthRequired(), middleware.RoleRequired("ADMIN"), middleware.OwnerRequired(productHandler.ProductService()), productHandler.UpdateProduct)
+			products.DELETE("/:id", middleware.AuthRequired(), middleware.RoleRequired("ADMIN"), middleware.OwnerRequired(productHandler.ProductService()), productHandler.DeleteProduct)
 		}
 	}
 	return router

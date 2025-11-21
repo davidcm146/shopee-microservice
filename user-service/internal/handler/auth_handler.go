@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
-	"github.com/davidcm146/shopee-microservice/user-service/internal/models"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/service"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/validation"
 	"github.com/gin-gonic/gin"
@@ -109,7 +108,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No user in context"})
 		return
 	}
-	user := currentUser.(*models.User)
+	user := currentUser.(*dto.AuthResponse)
 	c.JSON(http.StatusOK, gin.H{
 		"id":    user.ID,
 		"email": user.Email,

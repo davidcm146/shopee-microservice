@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"github.com/davidcm146/shopee-microservice/user-service/internal/common/errors"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/handler"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/middleware"
 	"github.com/gin-gonic/gin"
@@ -8,6 +9,7 @@ import (
 
 func NewRouter(authHandler *handler.AuthHandler) *gin.Engine {
 	router := gin.Default()
+	router.Use(errors.ErrorHandler())
 	api := router.Group("/api")
 	{
 		auth := api.Group("/auth")
