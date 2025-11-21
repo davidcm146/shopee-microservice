@@ -9,7 +9,7 @@ import (
 
 func NewRouter(authHandler *handler.AuthHandler) *gin.Engine {
 	router := gin.Default()
-	router.Use(errors.ErrorHandler())
+	router.Use(Errors.ErrorHandler())
 	api := router.Group("/api")
 	{
 		auth := api.Group("/auth")
