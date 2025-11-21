@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -16,15 +17,20 @@ func AuthRequired(authService service.AuthService) gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return
 		}
-		fmt.Println("Raw Cookie Header:", c.Request.Header.Get("Cookie"))
+		// fmt.Println("Raw Cookie Header:", c.Request.Header.Get("Cookie"))
 		user, err := authService.GetUserBySessionID(c.Request.Context(), cookie.Value)
-		fmt.Println("User info: ", user)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
 			return
 		}
 
-		c.Set("currentUser", user)
+		authUser := &dto.AuthResponse{
+			ID:    user.ID,
+			Role:  user.Role,
+			Email: user.Email,
+		}
+
+		c.Set("currentUser", authUser)
 		c.Next()
 	}
 }

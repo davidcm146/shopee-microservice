@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
@@ -33,6 +32,8 @@ func NewAuthService(userRepo repository.UserRepository, redis *db.RedisConfig) A
 	}
 }
 
+// var validate = validator.New()
+
 func (s *authService) Register(ctx context.Context, input *dto.RegisterInput) (*models.User, error) {
 	// Check if user already exists
 	existingUser, _ := s.userRepo.FindByEmail(ctx, input.Email)
@@ -40,18 +41,10 @@ func (s *authService) Register(ctx context.Context, input *dto.RegisterInput) (*
 		return nil, errors.New("email already in use")
 	}
 
-	// Hash password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	// Create user
+	user, err := models.NewUser(input.Email, input.Password, input.Name, input.Role)
 	if err != nil {
 		return nil, err
-	}
-
-	// Create user
-	user := &models.User{
-		Role:     input.Role,
-		Name:     input.Name,
-		Email:    input.Email,
-		Password: string(hashedPassword),
 	}
 
 	createdUser, err := s.userRepo.Create(ctx, user)
@@ -90,7 +83,6 @@ func (s *authService) Logout(ctx context.Context, sessionID string) error {
 
 func (s *authService) GetUserBySessionID(ctx context.Context, sessionID string) (*models.User, error) {
 	userIDStr, err := s.redis.Client.Get(ctx, sessionID).Result()
-	fmt.Println("UserID: ", userIDStr)
 	if err != nil {
 		return nil, errors.New("session not found")
 	}

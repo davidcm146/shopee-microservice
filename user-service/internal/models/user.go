@@ -17,9 +17,18 @@ type User struct {
 	CreatedAt   time.Time `bson:"createdAt" json:"createdAt"`
 }
 
-func NewUser(email, password, name, role string) *User {
-	hashed, _ := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	return &User{Email: email, Name: name, Role: role, Password: string(hashed)}
+func NewUser(email, password, name, role string) (*User, error) {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	return &User{
+		Email:     email,
+		Name:      name,
+		Role:      role,
+		Password:  string(hashed),
+		CreatedAt: time.Now(),
+	}, nil
 }
 
 func (u *User) CheckPassword(pw string) bool {

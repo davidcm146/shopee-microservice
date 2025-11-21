@@ -4,9 +4,10 @@ import (
 	"net/http"
 
 	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
-	"github.com/davidcm146/shopee-microservice/user-service/internal/models"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/service"
+	"github.com/davidcm146/shopee-microservice/user-service/internal/validation"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type AuthHandler struct {
@@ -23,20 +24,31 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	}
 }
 
+var validate = validator.New()
+
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input dto.RegisterInput
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := h.authService.Register(c.Request.Context(), &input)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	if errs, err := validation.ValidateStruct(input); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
+		return
+	} else if len(errs) > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"errors": errs})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"user": user})
+	user, err := h.authService.Register(c.Request.Context(), &input)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"errors": err})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"user": user, "message": "Registration successful"})
 }
 
 func (h *AuthHandler) Login(c *gin.Context) {
@@ -96,9 +108,27 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No user in context"})
 		return
 	}
-	user := currentUser.(*models.User)
+	user := currentUser.(*dto.AuthResponse)
 	c.JSON(http.StatusOK, gin.H{
 		"id":    user.ID,
+		"email": user.Email,
+	})
+}
+
+func (h *AuthHandler) VerifySession(c *gin.Context) {
+	sessionID := c.Query("session_id")
+	if sessionID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "session_id query parameter is required"})
+		return
+	}
+
+	user, err := h.authService.GetUserBySessionID(c.Request.Context(), sessionID)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"id":    user.ID,
+		"role":  user.Role,
 		"email": user.Email,
 	})
 }
