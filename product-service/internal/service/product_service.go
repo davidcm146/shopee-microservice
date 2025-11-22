@@ -2,8 +2,7 @@ package service
 
 import (
 	"context"
-	"errors"
-
+	"github.com/davidcm146/shopee-microservice/product-service/internal/common/errors"
 	"github.com/davidcm146/shopee-microservice/product-service/internal/dto"
 	"github.com/davidcm146/shopee-microservice/product-service/internal/models"
 	"github.com/davidcm146/shopee-microservice/product-service/internal/repository"
@@ -12,6 +11,7 @@ import (
 type ProductService interface {
 	FindAll(ctx context.Context) ([]*models.Product, error)
 	FindByID(ctx context.Context, id string) (*models.Product, error)
+	FindBySellerID(ctx context.Context, sellerID string) ([]*models.Product, error)
 	Create(ctx context.Context, input *dto.CreateProductInput) (*models.Product, error)
 	Update(ctx context.Context, id string, input *dto.UpdateProductInput) (*models.Product, error)
 	SoftDelete(ctx context.Context, id string) error
@@ -36,6 +36,10 @@ func (s *productService) FindByID(ctx context.Context, id string) (*models.Produ
 	return s.repo.FindByID(ctx, id)
 }
 
+func (s *productService) FindBySellerID(ctx context.Context, sellerID string) ([]*models.Product, error) {
+	return s.repo.FindBySellerID(ctx, sellerID)
+}
+
 func (s *productService) Create(ctx context.Context, input *dto.CreateProductInput) (*models.Product, error) {
 	product := models.NewProduct(input.Name, input.SellerID, input.Category, input.Description, input.Price, input.Quantity, input.Features)
 	return s.repo.Create(ctx, product)
@@ -44,10 +48,10 @@ func (s *productService) Create(ctx context.Context, input *dto.CreateProductInp
 func (s *productService) Update(ctx context.Context, id string, input *dto.UpdateProductInput) (*models.Product, error) {
 	existingProduct, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Internal("Failed to retrieve product")
 	}
 	if existingProduct == nil || existingProduct.IsDeleted {
-		return nil, errors.New("product not found or has been deleted")
+		return nil, errors.NotFound("product not found or has been deleted")
 	}
 
 	if input.Name != nil {
@@ -76,7 +80,7 @@ func (s *productService) Update(ctx context.Context, id string, input *dto.Updat
 
 	updated, err := s.repo.Update(ctx, existingProduct)
 	if err != nil {
-		return nil, err
+		return nil, errors.Internal("Failed to update product")
 	}
 
 	return updated, nil
@@ -85,11 +89,11 @@ func (s *productService) Update(ctx context.Context, id string, input *dto.Updat
 func (s *productService) SoftDelete(ctx context.Context, id string) error {
 	existingProduct, err := s.repo.FindByID(ctx, id)
 	if err != nil {
-		return err
+		return errors.Internal("Failed to retrieve product")
 	}
 
 	if existingProduct == nil || existingProduct.IsDeleted {
-		return errors.New("product not found or already deleted")
+		return errors.NotFound("Product not found or already deleted")
 	}
 
 	err = s.repo.SoftDelete(ctx, id)
