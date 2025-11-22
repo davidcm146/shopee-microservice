@@ -18,6 +18,7 @@ type ProductRepository interface {
 	// Define product repository methods here
 	FindAll(ctx context.Context) ([]*models.Product, error)
 	FindByID(ctx context.Context, id string) (*models.Product, error)
+	FindBySellerID(ctx context.Context, sellerID string) ([]*models.Product, error)
 	Create(ctx context.Context, product *models.Product) (*models.Product, error)
 	Update(ctx context.Context, product *models.Product) (*models.Product, error)
 	Delete(ctx context.Context, id string) error
@@ -52,7 +53,6 @@ func (r *productRepository) FindAll(ctx context.Context) ([]*models.Product, err
 func (r *productRepository) FindByID(ctx context.Context, id string) (*models.Product, error) {
 	// TODO
 	objID, err := primitive.ObjectIDFromHex(id)
-	fmt.Println("Finding product by ID:", objID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,6 +63,25 @@ func (r *productRepository) FindByID(ctx context.Context, id string) (*models.Pr
 		return nil, err
 	}
 	return &product, nil
+}
+
+func (r *productRepository) FindBySellerID(ctx context.Context, sellerID string) ([]*models.Product, error) {
+	filter := bson.M{
+		"sellerID":  sellerID,
+		"isDeleted": false,
+	}
+	cursor, err := r.collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var products []*models.Product
+	if err = cursor.All(ctx, &products); err != nil {
+		return nil, err
+	}
+	fmt.Println("Products by sellerID:", products)
+	return products, nil
 }
 
 func (r *productRepository) Create(ctx context.Context, product *models.Product) (*models.Product, error) {

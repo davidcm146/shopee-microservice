@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
+	"github.com/davidcm146/shopee-microservice/user-service/internal/common/errors"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/models"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/repository"
@@ -32,13 +32,11 @@ func NewAuthService(userRepo repository.UserRepository, redis *db.RedisConfig) A
 	}
 }
 
-// var validate = validator.New()
-
 func (s *authService) Register(ctx context.Context, input *dto.RegisterInput) (*models.User, error) {
 	// Check if user already exists
 	existingUser, _ := s.userRepo.FindByEmail(ctx, input.Email)
 	if existingUser != nil {
-		return nil, errors.New("email already in use")
+		return nil, errors.UnprocessableEntity("user already exists")
 	}
 
 	// Create user
@@ -58,12 +56,12 @@ func (s *authService) Register(ctx context.Context, input *dto.RegisterInput) (*
 func (s *authService) Login(ctx context.Context, input *dto.LoginInput) (*dto.LoginResult, error) {
 	user, err := s.userRepo.FindByEmail(ctx, input.Email)
 	if err != nil || user == nil {
-		return nil, errors.New("invalid credentials")
+		return nil, errors.Unauthorized("invalid credentials")
 	}
 
 	// Compare password
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password)); err != nil {
-		return nil, errors.New("invalid credentials")
+		return nil, errors.Unauthorized("invalid credentials")
 	}
 
 	sessionID := uuid.NewString()
@@ -84,7 +82,7 @@ func (s *authService) Logout(ctx context.Context, sessionID string) error {
 func (s *authService) GetUserBySessionID(ctx context.Context, sessionID string) (*models.User, error) {
 	userIDStr, err := s.redis.Client.Get(ctx, sessionID).Result()
 	if err != nil {
-		return nil, errors.New("session not found")
+		return nil, errors.Unauthorized("session not found")
 	}
 
 	return s.userRepo.FindByID(ctx, userIDStr)

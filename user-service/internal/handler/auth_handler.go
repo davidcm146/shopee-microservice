@@ -3,11 +3,11 @@ package handler
 import (
 	"net/http"
 
+	"github.com/davidcm146/shopee-microservice/user-service/internal/common/errors"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/dto"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/service"
 	"github.com/davidcm146/shopee-microservice/user-service/internal/validation"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 type AuthHandler struct {
@@ -24,27 +24,29 @@ func NewAuthHandler(authService service.AuthService) *AuthHandler {
 	}
 }
 
-var validate = validator.New()
-
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input dto.RegisterInput
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
 	if errs, err := validation.ValidateStruct(input); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	} else if len(errs) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": errs})
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"errors": errs})
 		return
 	}
 
 	user, err := h.authService.Register(c.Request.Context(), &input)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"errors": err})
+		if appErr, ok := err.(*errors.AppError); ok {
+			c.JSON(appErr.Status, gin.H{"errors": appErr.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
@@ -60,7 +62,11 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	result, err := h.authService.Login(c.Request.Context(), &input)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		if appErr, ok := err.(*errors.AppError); ok {
+			c.JSON(appErr.Status, gin.H{"error": appErr.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
@@ -80,12 +86,16 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) Logout(c *gin.Context) {
 	cookie, err := c.Request.Cookie("session_id")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Session cookie not found"})
+		if appErr, ok := err.(*errors.AppError); ok {
+			c.JSON(appErr.Status, gin.H{"error": appErr.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
 	if err := h.authService.Logout(c.Request.Context(), cookie.Value); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 		return
 	}
 
@@ -124,7 +134,11 @@ func (h *AuthHandler) VerifySession(c *gin.Context) {
 
 	user, err := h.authService.GetUserBySessionID(c.Request.Context(), sessionID)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
+		if appErr, ok := err.(*errors.AppError); ok {
+			c.JSON(appErr.Status, gin.H{"error": appErr.Message})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"id":    user.ID,

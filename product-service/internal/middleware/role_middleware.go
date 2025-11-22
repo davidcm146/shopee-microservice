@@ -30,7 +30,7 @@ func RoleRequired(roles ...string) gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
+		c.JSON(http.StatusForbidden, gin.H{"error": "You do not have permission to access this resource"})
 		c.Abort()
 	}
 }

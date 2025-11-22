@@ -34,7 +34,7 @@ func OwnerRequired(productService service.ProductService) gin.HandlerFunc {
 		}
 
 		if product.SellerID != user.ID {
-			c.AbortWithStatusJSON(403, gin.H{"error": "Forbidden"})
+			c.AbortWithStatusJSON(403, gin.H{"error": "You do not have permission to access this resource"})
 			return
 		}
 		c.Next()

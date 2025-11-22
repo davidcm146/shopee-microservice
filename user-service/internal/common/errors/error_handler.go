@@ -1,4 +1,4 @@
-package Errors
+package errors
 
 import "github.com/gin-gonic/gin"
 
@@ -8,6 +8,11 @@ func ErrorHandler() gin.HandlerFunc {
 
 		if len(c.Errors) > 0 {
 			err := c.Errors.Last().Err
+
+			if err == nil {
+				return
+			}
+
 			if appErr, ok := err.(*AppError); ok {
 				c.JSON(appErr.Status, gin.H{
 					"error": gin.H{

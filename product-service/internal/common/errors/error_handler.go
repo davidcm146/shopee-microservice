@@ -1,4 +1,4 @@
-package Errors
+package errors
 
 import "github.com/gin-gonic/gin"
 
